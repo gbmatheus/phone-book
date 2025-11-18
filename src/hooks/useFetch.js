@@ -15,7 +15,6 @@ export function useFetch(url = `${urlApi}/api`) {
   const loading = ref(false)
 
   const httpRequest = async (endpoint, options = {}) => {
-    console.log({ endpoint })
     loading.value = true
     error.value = null
     data.value = null
@@ -28,29 +27,26 @@ export function useFetch(url = `${urlApi}/api`) {
         },
         ...options,
       })
-      console.log({ response })
 
       if (!response.ok) {
-        console.log(`Error ${response.status}: ${response.statusText}`)
-        throw new Error(`Error ${response.status}: ${response.statusText}`)
+        const err = await response.json()
+        let messageError = `Error ${response.status}: ${response.statusText}`
+        if (err.errorsMessages) {
+          error.value = err.errorsMessages
+          messageError += ` ErrorMessages: ${err.errorsMessages}`
+        }
+
+        throw new Error(messageError)
       }
 
       const contentType = response.headers.get('content-type')
-      if (contentType && contentType.includes('application/json')) {
+      if (contentType && contentType.includes('application/json'))
         data.value = await response.json()
-        console.log('response.json ', { value: data.value })
-      } else {
-        console.log('response.text ', { value: data.value })
-        data.value = await response.text()
-      }
+      else data.value = await response.text()
 
-      // var responseJson = await response.json()
-      // if (!response.ok) error.value = responseJson
-      // else data.value = responseJson
       return data.value
     } catch (err) {
-      error.value = err.message
-      console.log(err)
+      if (error.value === null) error.value = err.message
       throw err
     } finally {
       loading.value = false
