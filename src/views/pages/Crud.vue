@@ -218,9 +218,9 @@ const confirmDeleteContact = (event, item) => {
         <template #list="slotProps">
           <div class="flex flex-col max-h-192 overflow-auto">
             <div v-for="(item, index) in slotProps.items" :key="index">
-              <div class="bg-surface-0 dark:bg-surface-950 px-6 py-4 md:px-12 lg:px-20">
+              <div class="bg-surface-0 dark:bg-surface-950 px-4 py-4 md:px-8 lg:px-12">
                 <div class="flex items-center flex-col lg:flex-row lg:justify-between">
-                  <div class="flex items-center flex-col md:flex-row gap-4">
+                  <div class="flex items-center basis-6/12 flex-col md:flex-row gap-4">
                     <Avatar
                       :label="item.name[0]"
                       image="https://fqjltiegiezfetthbags.supabase.co/storage/v1/object/public/block.images/blocks/pageheading/kathryn.png"
@@ -232,7 +232,7 @@ const confirmDeleteContact = (event, item) => {
                       {{ item.name }}
                     </div>
                   </div>
-                  <div class="flex items-start flex-col md:flex-row gap-8">
+                  <div class="flex items-start flex-col basis-5/12 md:flex-row gap-8">
                     <div class="flex flex-col">
                       <div class="text-surface-700 dark:text-surface-100 mt-1">
                         {{ item.phoneNumber }}
@@ -243,7 +243,7 @@ const confirmDeleteContact = (event, item) => {
                     </div>
                   </div>
 
-                  <div class="mt-6 lg:mt-0 flex items-center gap-4">
+                  <div class="mt-6 lg:mt-0 flex items-center justify-end basis-1/12 gap-4">
                     <Button
                       icon="pi pi-pencil"
                       outlined
