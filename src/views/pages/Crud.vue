@@ -3,7 +3,6 @@ import { FilterMatchMode } from '@primevue/core/api'
 import {
   Avatar,
   Button,
-  Card,
   ConfirmPopup,
   DataView,
   Dialog,
@@ -16,17 +15,20 @@ import {
 } from 'primevue'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Form } from '@primevue/forms'
 import { z } from 'zod'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { useFetch } from '@/hooks/useFetch'
+import ContactItemLoading from '@/components/ContactItemLoading.vue'
 
 const { data, error, loading, get, post, put, del } = useFetch()
 
+const getError = computed(() => error.value.toString().replace(',', '\n'))
+
 onMounted(async () => {
   await get('/contacts')
-  contacts.value = data
+  contacts.value = data.value
   isLoading.value = loading
 })
 
@@ -93,31 +95,34 @@ async function saveContact() {
   submitted.value = true
 
   if (contact?.value.name?.trim()) {
-    if (contact.value.id) {
-      await put(`/contacts/${contact.value.id}`, contact.value)
+    try {
+      let messageSuccess = 'Contato Criado'
+      if (contact.value.id) {
+        await put(`/contacts/${contact.value.id}`, contact.value)
+        messageSuccess = 'Contato Atualizado'
+      } else await post('/contacts', contact.value)
+
+      await get('/contacts')
+      contacts.value = data.value
 
       toast.add({
         severity: 'success',
-        summary: 'Successful',
-        detail: 'Contato Atualizado',
+        summary: 'Sucesso',
+        detail: messageSuccess,
         life: 3000,
       })
-    } else {
-      await post('/contacts', contact.value)
 
+      // ! CORRIGIR ISSO
+      contactDialog.value = false
+      contact.value = {}
+    } catch (err) {
       toast.add({
-        severity: 'success',
-        summary: 'Successful',
-        detail: 'Contato Criado',
+        severity: 'error',
+        summary: 'Rejeitado',
+        detail: getError,
         life: 3000,
       })
     }
-
-    // ! CORRIGIR ISSO
-    await get('/contacts')
-    contacts.value = data
-    contactDialog.value = false
-    contact.value = {}
   }
 }
 
@@ -194,7 +199,7 @@ const confirmDeleteContact = (event, item) => {
         </template>
       </Toolbar>
 
-      <DataView :value="contacts.value" paginator :rows="10" :lazy="true">
+      <DataView :value="contacts" paginator :rows="10" :lazy="true">
         <template #header>
           <div class="flex flex-wrap gap-2 items-center justify-between">
             <h4 class="m-0">Agenda Telefônica</h4>
@@ -207,6 +212,9 @@ const confirmDeleteContact = (event, item) => {
           </div>
         </template>
 
+        <template #empty>
+          <ContactItemLoading />
+        </template>
         <template #list="slotProps">
           <div class="flex flex-col max-h-192 overflow-auto">
             <div v-for="(item, index) in slotProps.items" :key="index">
@@ -214,7 +222,7 @@ const confirmDeleteContact = (event, item) => {
                 <div class="flex items-center flex-col lg:flex-row lg:justify-between">
                   <div class="flex items-center flex-col md:flex-row gap-4">
                     <Avatar
-                      label="K"
+                      :label="item.name[0]"
                       image="https://fqjltiegiezfetthbags.supabase.co/storage/v1/object/public/block.images/blocks/pageheading/kathryn.png"
                       size="xlarge"
                       style="background-color: #ece9fc; color: #2a1261"
@@ -231,7 +239,6 @@ const confirmDeleteContact = (event, item) => {
                       </div>
                       <div class="text-surface-500 dark:text-surface-300 mt-1">
                         {{ item.email }}
-                        Email
                       </div>
                     </div>
                   </div>
