@@ -1,14 +1,14 @@
-import { body } from '@primeuix/themes/aura/card'
 import { ref } from 'vue'
 
 // const urlServer = 'http://localhost:3000/contacts'
 // http://localhost:5128/swagger/index.html
 // /api/Contacts
 
+const HTTP_STATUS_NOT_FOUND = 204
+
 const urlApi = import.meta.env.VITE_API_URL
 console.log({ urlApi })
 
-// export function useFetch(url = 'http://localhost:3000') {
 export function useFetch(url = `${urlApi}/api`) {
   const data = ref(null)
   const error = ref(null)
@@ -43,6 +43,8 @@ export function useFetch(url = `${urlApi}/api`) {
       if (contentType && contentType.includes('application/json'))
         data.value = await response.json()
       else data.value = await response.text()
+
+      if (response.status === HTTP_STATUS_NOT_FOUND) data.value = []
 
       return data.value
     } catch (err) {

@@ -147,6 +147,7 @@ const confirmDeleteContact = (event, item) => {
 
       await del(`/contacts/${item.id}`)
       await get('/contacts')
+      contacts.value = data.value
       toast.add({
         severity: 'info',
         summary: 'Confirmed',
