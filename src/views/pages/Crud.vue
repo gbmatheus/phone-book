@@ -21,6 +21,7 @@ import { z } from 'zod'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { useFetch } from '@/hooks/useFetch'
 import ContactItemLoading from '@/components/ContactItemLoading.vue'
+import ContactItemEmpty from '@/components/ContactItemEmpty.vue'
 
 const { data, error, loading, get, post, put, del } = useFetch()
 
@@ -34,7 +35,6 @@ onMounted(async () => {
 
 const toast = useToast()
 const confirm = useConfirm()
-const dt = ref()
 
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -74,10 +74,6 @@ const onFormSubmit = ({ valid, values }) => {
     // saveContact()
     toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 })
   }
-}
-
-function exportCSV() {
-  dt.value.exportCSV()
 }
 
 function openNewContact() {
@@ -127,9 +123,7 @@ async function saveContact() {
 }
 
 function editContact(data) {
-  console.log({ data })
   contact.value = { ...data }
-  console.log({ data })
   initialValues.value = { ...data }
   contactDialog.value = true
 }
@@ -180,22 +174,7 @@ const confirmDeleteContact = (event, item) => {
     <div class="w-full max-w-7xl overflow-auto bg-white shadow-m">
       <Toolbar class="mb-6">
         <template #start>
-          <Button
-            label="Adicionar"
-            icon="pi pi-plus"
-            severity="secondary"
-            class="mr-2"
-            @click="openNewContact"
-          />
-        </template>
-
-        <template #end>
-          <Button
-            label="Exportar"
-            icon="pi pi-upload"
-            severity="secondary"
-            @click="exportCSV($event)"
-          />
+          <Button label="Adicionar" icon="pi pi-plus" class="mr-2" @click="openNewContact" />
         </template>
       </Toolbar>
 
@@ -213,7 +192,8 @@ const confirmDeleteContact = (event, item) => {
         </template>
 
         <template #empty>
-          <ContactItemLoading />
+          <ContactItemLoading v-if="isLoading" />
+          <ContactItemEmpty v-else />
         </template>
         <template #list="slotProps">
           <div class="flex flex-col max-h-192 overflow-auto">
